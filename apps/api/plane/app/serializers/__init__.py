@@ -112,6 +112,11 @@ from .estimate import (
     WorkspaceEstimateSerializer,
 )
 
+from .custom_field import (
+    CustomFieldSerializer,
+    IssueCustomFieldValueSerializer,
+)
+
 from .intake import (
     IntakeSerializer,
     IntakeIssueSerializer,

@@ -18,6 +18,7 @@ from plane.app.views import (
     ProjectAdvanceAnalyticsEndpoint,
     ProjectAdvanceAnalyticsStatsEndpoint,
     ProjectAdvanceAnalyticsChartEndpoint,
+    RealifeSummaryEndpoint,
 )
 
 
@@ -56,6 +57,11 @@ urlpatterns = [
         "workspaces/<str:slug>/project-stats/",
         ProjectStatsEndpoint.as_view(),
         name="project-analytics",
+    ),
+    path(
+        "workspaces/<str:slug>/realife-summary/",
+        RealifeSummaryEndpoint.as_view(),
+        name="realife-summary",
     ),
     path(
         "workspaces/<str:slug>/advance-analytics/",

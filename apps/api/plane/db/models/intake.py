@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
-# Django imports
+from django.conf import settings
 from django.db import models
 
 # Module imports
@@ -69,6 +69,14 @@ class IntakeIssue(ProjectBaseModel):
     )
     source = models.CharField(max_length=255, default="IN_APP", null=True, blank=True)
     source_email = models.TextField(blank=True, null=True)
+    # REALIFE extension: designated approver (e.g. manager) for pending intake issues.
+    approver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="intake_approvals",
+        null=True,
+        blank=True,
+    )
     external_source = models.CharField(max_length=255, null=True, blank=True)
     external_id = models.CharField(max_length=255, blank=True, null=True)
     extra = models.JSONField(default=dict)

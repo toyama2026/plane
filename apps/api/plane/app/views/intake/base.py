@@ -269,12 +269,29 @@ class IntakeIssueViewSet(BaseViewSet):
         if serializer.is_valid():
             serializer.save()
             intake_id = Intake.objects.filter(workspace__slug=slug, project_id=project_id).first()
+            # REALIFE extension: optional designated approver (must be an active project member)
+            approver = None
+            approver_id = request.data.get("approver_id")
+            if approver_id:
+                is_member = ProjectMember.objects.filter(
+                    workspace__slug=slug,
+                    project_id=project_id,
+                    member_id=approver_id,
+                    is_active=True,
+                ).exists()
+                if not is_member:
+                    return Response(
+                        {"error": "Approver must be an active project member"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                approver = request.user.__class__.objects.filter(pk=approver_id).first()
             # create an intake issue
             intake_issue = IntakeIssue.objects.create(
                 intake_id=intake_id.id,
                 project_id=project_id,
                 issue_id=serializer.data["id"],
                 source=SourceType.IN_APP,
+                approver=approver,
             )
             # Create an Issue Activity
             issue_activity.delay(
@@ -331,7 +348,9 @@ class IntakeIssueViewSet(BaseViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @allow_permission(allowed_roles=[ROLE.ADMIN], creator=True, model=Issue)
+    # REALIFE: MEMBERs pass the gate; non-privileged users are rejected
+    # below (preserves previous behavior) unless they are the approver.
+    @allow_permission(allowed_roles=[ROLE.ADMIN, ROLE.MEMBER], creator=True, model=Issue)
     def partial_update(self, request, slug, project_id, pk):
         skip_activity = request.data.pop("skip_activity", False)
         is_description_update = request.data.get("description_html") is not None
@@ -361,6 +380,22 @@ class IntakeIssueViewSet(BaseViewSet):
         if not project_member and not is_workspace_admin:
             return Response(
                 {"error": "Only admin or creator can update the intake work items"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # REALIFE extension: preserve the previous gate (project ADMIN,
+        # workspace admin in project, or issue creator) and additionally
+        # admit the designated approver.
+        is_issue_creator = str(intake_issue.issue.created_by_id) == str(request.user.id)
+        is_approver = (
+            str(intake_issue.approver_id) == str(request.user.id) if intake_issue.approver_id else False
+        )
+        has_admin_access = (project_member and project_member.role >= ROLE.ADMIN.value) or (
+            project_member and is_workspace_admin
+        )
+        if not (has_admin_access or is_issue_creator or is_approver):
+            return Response(
+                {"error": "You don't have the required permissions."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -418,11 +453,13 @@ class IntakeIssueViewSet(BaseViewSet):
             if not issue_serializer.is_valid():
                 return Response(issue_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Validate intake issue data if user has permission
+        # Validate intake issue data if user has permission.
+        # REALIFE extension: the designated approver may also accept/reject.
         intake_serializer = None
         intake_current_instance = None
 
-        if (project_member and project_member.role > ROLE.MEMBER.value) or is_workspace_admin:
+        is_approver = str(intake_issue.approver_id) == str(request.user.id) if intake_issue.approver_id else False
+        if (project_member and project_member.role > ROLE.MEMBER.value) or is_workspace_admin or is_approver:
             intake_current_instance = json.dumps(IntakeIssueSerializer(intake_issue).data, cls=DjangoJSONEncoder)
             intake_serializer = IntakeIssueSerializer(intake_issue, data=request.data, partial=True)
 
