@@ -176,6 +176,11 @@
       "current": "現在の見積もりシステム",
       "select": "見積もりシステムを選択"
     },
+    "custom_fields": {
+      "label": "追加項目",
+      "heading": "追加項目",
+      "description": "顧客名や金額など、自社用の項目を仕事に追加します。"
+    },
     "automations": {
       "label": "自動化",
       "heading": "自動化",

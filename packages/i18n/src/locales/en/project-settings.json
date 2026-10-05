@@ -176,6 +176,11 @@
       "current": "Current estimate system",
       "select": "Select an estimate system"
     },
+    "custom_fields": {
+      "label": "Custom fields",
+      "heading": "Custom fields",
+      "description": "Add your own fields to work items, such as customer name or amount."
+    },
     "automations": {
       "label": "Automations",
       "heading": "Automations",

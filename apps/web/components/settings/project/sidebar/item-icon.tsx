@@ -13,6 +13,7 @@ import {
   MembersOutline,
   ModuleOutline,
   PagesOutline,
+  PropertiesOutline,
   StateOutline,
   TriggerOutline,
   ViewsOutline,
@@ -34,5 +35,6 @@ export const PROJECT_SETTINGS_ICONS: Record<TProjectSettingsTabs, LucideIcon | R
   states: StateOutline,
   labels: LabelsOutline,
   estimates: EstimateOutline,
+  custom_fields: PropertiesOutline,
   automations: TriggerOutline,
 };

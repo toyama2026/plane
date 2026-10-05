@@ -215,6 +215,16 @@ export const InboxIssueMainContent = observer(function InboxIssueMainContent(pro
           isEditable={isEditable}
           duplicateIssueDetails={inboxIssue?.duplicate_issue_detail}
           isIntakeAccepted={isIntakeAccepted}
+          approverId={inboxIssue?.approver ?? null}
+          onApproverChange={(userId) => {
+            void inboxIssue?.updateInboxIssueApprover(userId).catch(() => {
+              setToast({
+                title: "承認者の更新に失敗しました",
+                type: "error",
+                message: "承認者の更新に失敗しました",
+              });
+            });
+          }}
         />
       </div>
 

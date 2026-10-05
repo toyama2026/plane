@@ -100,6 +100,8 @@ export const ANALYTICS_INSIGHTS_FIELDS: Record<TAnalyticsTabsBase, IInsightField
       i18nKey: "workspace_analytics.completed_work_items",
     },
   ],
+  // REALIFE extension: custom tab renders its own insights; no shared fields.
+  realife: [],
 };
 
 export const ANALYTICS_DURATION_FILTER_OPTIONS = [

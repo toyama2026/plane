@@ -8,6 +8,7 @@
 import { API_BASE_URL } from "@plane/constants";
 import type {
   IAnalyticsResponse,
+  IRealifeSummary,
   TAnalyticsTabsBase,
   TAnalyticsGraphsBase,
   TAnalyticsFilterParams,
@@ -79,6 +80,21 @@ export class AnalyticsService extends APIService {
     return this.get(processedUrl, {
       params: {
         type: tab,
+        ...params,
+      },
+    })
+      .then((res) => res?.data)
+      .catch((err) => {
+        throw err?.response?.data;
+      });
+  }
+
+  async getRealifeSummary(
+    workspaceSlug: string,
+    params?: { month?: string; project_ids?: string }
+  ): Promise<IRealifeSummary> {
+    return this.get(`/api/workspaces/${workspaceSlug}/realife-summary/`, {
+      params: {
         ...params,
       },
     })

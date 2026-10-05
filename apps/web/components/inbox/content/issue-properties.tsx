@@ -6,6 +6,7 @@
 
 import { observer } from "mobx-react";
 import {
+  ApproverOutline,
   DueDateOutline,
   DuplicateOfOutline,
   LabelsOutline,
@@ -39,11 +40,22 @@ type Props = {
   isEditable: boolean;
   duplicateIssueDetails: TInboxDuplicateIssueDetails | undefined;
   isIntakeAccepted: boolean;
+  approverId?: string | null;
+  onApproverChange?: (userId: string | null) => void;
 };
 
 export const InboxIssueContentProperties = observer(function InboxIssueContentProperties(props: Props) {
-  const { workspaceSlug, projectId, issue, issueOperations, isEditable, duplicateIssueDetails, isIntakeAccepted } =
-    props;
+  const {
+    workspaceSlug,
+    projectId,
+    issue,
+    issueOperations,
+    isEditable,
+    duplicateIssueDetails,
+    isIntakeAccepted,
+    approverId,
+    onApproverChange,
+  } = props;
 
   const router = useAppRouter();
   // store hooks
@@ -117,6 +129,26 @@ export const InboxIssueContentProperties = observer(function InboxIssueContentPr
                   multiple
                   variant="select-ghost-md"
                   showLabel={(issue?.assignee_ids ?? []).length <= 1}
+                />
+              </div>
+            </div>
+            {/* Approver */}
+            <div className="flex h-8 items-center gap-2">
+              <div className="flex w-2/5 flex-shrink-0 items-center gap-1 text-13 text-tertiary">
+                <ApproverOutline className="h-4 w-4 flex-shrink-0" />
+                <span>承認者</span>
+              </div>
+              <div className="w-3/5 flex-grow">
+                <MemberSelect
+                  value={approverId ?? null}
+                  onChange={(val) => onApproverChange?.(val || null)}
+                  disabled={!isEditable}
+                  projectId={projectId?.toString() ?? ""}
+                  placeholder="承認者を選択"
+                  variant="select-ghost-md"
+                  showLabel
+                  clearable
+                  clearLabel="承認者を外す"
                 />
               </div>
             </div>

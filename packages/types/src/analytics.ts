@@ -37,7 +37,7 @@ export enum ChartYAxisMetric {
   EPIC_WORK_ITEM_COUNT = "EPIC_WORK_ITEM_COUNT",
 }
 
-export type TAnalyticsTabsBase = "overview" | "work-items";
+export type TAnalyticsTabsBase = "overview" | "work-items" | "realife";
 export type TAnalyticsGraphsBase = "projects" | "work-items" | "custom-work-items";
 export interface AnalyticsTab {
   key: TAnalyticsTabsBase;
@@ -88,6 +88,28 @@ export interface WorkItemInsightColumns {
 export type AnalyticsTableDataMap = {
   "work-items": WorkItemInsightColumns;
 };
+
+// REALIFE extension: monthly operations summary
+export interface IRealifeSummaryProject {
+  project_id: string;
+  project_name: string;
+  project_identifier: string;
+  created: number;
+  completed: number;
+  pending_approval: number;
+  overdue: number;
+}
+
+export interface IRealifeSummary {
+  month: string;
+  projects: IRealifeSummaryProject[];
+  totals: {
+    created: number;
+    completed: number;
+    pending_approval: number;
+    overdue: number;
+  };
+}
 
 export interface IAnalyticsParams {
   x_axis: ChartXAxisProperty;

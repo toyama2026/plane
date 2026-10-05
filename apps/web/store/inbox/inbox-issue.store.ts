@@ -30,9 +30,11 @@ export interface IInboxIssueStore {
   source: EInboxIssueSource | undefined;
   duplicate_to: string | undefined;
   created_by: string | undefined;
+  approver: string | null | undefined;
   duplicate_issue_detail: TInboxDuplicateIssueDetails | undefined;
   // actions
   updateInboxIssueStatus: (status: TInboxIssueStatus) => Promise<void>; // accept, decline
+  updateInboxIssueApprover: (userId: string | null) => Promise<void>; // designate approver
   updateInboxIssueDuplicateTo: (issueId: string) => Promise<void>; // connecting the inbox issue to the project existing issue
   updateInboxIssueSnoozeTill: (date: Date | undefined) => Promise<void>; // snooze the issue
   updateIssue: (issue: Partial<TIssue>) => Promise<void>; // updating the issue
@@ -50,6 +52,7 @@ export class InboxIssueStore implements IInboxIssueStore {
   source: EInboxIssueSource | undefined;
   duplicate_to: string | undefined;
   created_by: string | undefined;
+  approver: string | null | undefined;
   duplicate_issue_detail: TInboxDuplicateIssueDetails | undefined = undefined;
   workspaceSlug: string;
   projectId: string;
@@ -69,6 +72,7 @@ export class InboxIssueStore implements IInboxIssueStore {
     this.snoozed_till = data?.snoozed_till || undefined;
     this.duplicate_to = data?.duplicate_to || undefined;
     this.created_by = data?.created_by || undefined;
+    this.approver = data?.approver ?? undefined;
     this.source = data?.source || undefined;
     this.duplicate_issue_detail = data?.duplicate_issue_detail || undefined;
     this.workspaceSlug = workspaceSlug;
@@ -85,9 +89,11 @@ export class InboxIssueStore implements IInboxIssueStore {
       duplicate_to: observable,
       duplicate_issue_detail: observable,
       created_by: observable,
+      approver: observable,
       source: observable,
       // actions
       updateInboxIssueStatus: action,
+      updateInboxIssueApprover: action,
       updateInboxIssueDuplicateTo: action,
       updateInboxIssueSnoozeTill: action,
       updateIssue: action,
@@ -142,6 +148,22 @@ export class InboxIssueStore implements IInboxIssueStore {
     }
   };
 
+  updateInboxIssueApprover = async (userId: string | null) => {
+    const previousApprover = this.approver;
+    try {
+      if (!this.issue.id) return;
+      const inboxIssue = await this.inboxIssueService.update(this.workspaceSlug, this.projectId, this.issue.id, {
+        approver: userId,
+      });
+      runInAction(() => {
+        set(this, "approver", inboxIssue?.approver ?? null);
+      });
+    } catch {
+      runInAction(() => {
+        set(this, "approver", previousApprover);
+      });
+    }
+  };
   updateInboxIssueDuplicateTo = async (issueId: string) => {
     const inboxStatus = EInboxIssueStatus.DUPLICATE;
     const previousData: Partial<TInboxIssue> = {
